@@ -1,0 +1,45 @@
+//@version=6
+indicator("RVOL)", shorttitle="RVOL", format=format.volume)
+
+// Input parameters
+averaging_days = input.int(10, title="Number of Days for Comparison", minval=1)
+volume_type = input.string("Tick Volume", title="Volume Type", options=["Tick Volume", "Real Volume"])
+
+// Volume source selection
+vol_source = volume_type == "Tick Volume" ? volume : na(volume) ? volume : volume
+
+// Calculate relative volume
+calculate_rvol() =>
+    if bar_index >= averaging_days
+        current_vol = vol_source
+        mean_vol = 0.0
+        
+        // Calculate average volume over the specified period
+        for i = 1 to averaging_days
+            mean_vol += vol_source[i]
+        mean_vol := mean_vol / averaging_days
+        
+        // Calculate relative volume ratio
+        current_vol / mean_vol
+    else
+        0.0
+
+rvol = calculate_rvol()
+
+// Determine color based on relative volume levels
+rvol_color = rvol > 1.25 ? color.green : rvol > 0.8 ? color.orange : color.red
+
+// Plot relative volume as histogram
+plot(rvol, title="Relative Volume", style=plot.style_histogram, color=rvol_color, linewidth=3)
+
+// Add horizontal reference lines
+hline(1.25, title="Above Average Volume Level", color=color.white, linestyle=hline.style_dashed)
+hline(1.0, title="Average Volume Level", color=color.gray, linestyle=hline.style_solid)
+hline(0.8, title="Below Average Volume Level", color=color.white, linestyle=hline.style_dashed)
+
+// Display current RVOL value in a label
+if barstate.islast and not na(rvol)
+    var label rvol_label = na
+    label.delete(rvol_label)
+    rvol_label := label.new(x=bar_index, y=rvol, text="RVOL: " + str.tostring(rvol, "#.##"), color=rvol_color, textcolor=color.white, style=label.style_label_up,size=size.normal)
+

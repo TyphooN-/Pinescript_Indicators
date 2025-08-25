@@ -1,0 +1,81 @@
+//@version=6
+indicator("(MTF KAMA)", shorttitle="MultiKAMA", overlay=true)
+
+// Input parameters
+period_ama = input.int(10, title="AMA Period", minval=1)
+fast_period_ema = input.int(2, title="Fast EMA Period", minval=1)
+slow_period_ema = input.int(30, title="Slow EMA Period", minval=1)
+
+// Calculate smoothing constants
+fast_sc = 2.0 / (fast_period_ema + 1.0)
+slow_sc = 2.0 / (slow_period_ema + 1.0)
+
+// Function to calculate KAMA
+kama_calc() =>
+    var float kama = na
+    if bar_index >= period_ama
+        // Calculate Efficiency Ratio (ER)
+        signal = math.abs(open[0] - open[period_ama])
+        noise = 0.0
+        for i = 0 to period_ama - 1
+            noise += math.abs(open[i] - open[i + 1])
+        
+        er = noise != 0.0 ? signal / noise : 0.0
+        current_sc = (er * (fast_sc - slow_sc)) + slow_sc
+        smoothing_constant = math.pow(current_sc, 2)
+        
+        if na(kama)
+            kama := open
+        else
+            kama := smoothing_constant * (open - kama[1]) + kama[1]
+    kama
+
+// Get KAMA values from different timeframes
+kama_h1  = request.security(syminfo.tickerid, "60", kama_calc())
+kama_h4  = request.security(syminfo.tickerid, "240", kama_calc())
+kama_d1  = request.security(syminfo.tickerid, "D", kama_calc())
+kama_w1  = request.security(syminfo.tickerid, "W", kama_calc())
+kama_mn1 = request.security(syminfo.tickerid, "M", kama_calc())
+
+// Plot KAMA lines for different timeframes
+plot(kama_h1, title="KAMA H1", color=color.white, linewidth=2)
+plot(kama_h4, title="KAMA H4", color=color.yellow, linewidth=2)
+plot(kama_d1, title="KAMA D1", color=color.orange, linewidth=2)
+plot(kama_w1, title="KAMA W1", color=color.red, linewidth=2)
+plot(kama_mn1, title="KAMA MN1", color=color.purple, linewidth=2)
+
+// Check if current price is above or below each KAMA
+current_price = close
+is_above_h1 = current_price > kama_h1
+is_above_h4 = current_price > kama_h4
+is_above_d1 = current_price > kama_d1
+is_above_w1 = current_price > kama_w1
+is_above_mn1 = current_price > kama_mn1
+
+// Display information in a table
+if barstate.islast
+    var table info_table = table.new(position.top_right, 3, 6, bgcolor=color.white, border_width=1)
+    table.cell(info_table, 0, 0, "Timeframe", text_color=color.black, bgcolor=color.gray)
+    table.cell(info_table, 1, 0, "KAMA Value", text_color=color.black, bgcolor=color.gray)
+    table.cell(info_table, 2, 0, "Above/Below", text_color=color.black, bgcolor=color.gray)
+    
+    table.cell(info_table, 0, 1, "H1", text_color=color.black)
+    table.cell(info_table, 1, 1, str.tostring(kama_h1, "#.#####"), text_color=color.black)
+    table.cell(info_table, 2, 1, is_above_h1 ? "Above" : "Below", text_color=is_above_h1 ? color.green : color.red)
+    
+    table.cell(info_table, 0, 2, "H4", text_color=color.black)
+    table.cell(info_table, 1, 2, str.tostring(kama_h4, "#.#####"), text_color=color.black)
+    table.cell(info_table, 2, 2, is_above_h4 ? "Above" : "Below", text_color=is_above_h4 ? color.green : color.red)
+    
+    table.cell(info_table, 0, 3, "D1", text_color=color.black)
+    table.cell(info_table, 1, 3, str.tostring(kama_d1, "#.#####"), text_color=color.black)
+    table.cell(info_table, 2, 3, is_above_d1 ? "Above" : "Below", text_color=is_above_d1 ? color.green : color.red)
+    
+    table.cell(info_table, 0, 4, "W1", text_color=color.black)
+    table.cell(info_table, 1, 4, str.tostring(kama_w1, "#.#####"), text_color=color.black)
+    table.cell(info_table, 2, 4, is_above_w1 ? "Above" : "Below", text_color=is_above_w1 ? color.green : color.red)
+    
+    table.cell(info_table, 0, 5, "MN1", text_color=color.black)
+    table.cell(info_table, 1, 5, str.tostring(kama_mn1, "#.#####"), text_color=color.black)
+    table.cell(info_table, 2, 5, is_above_mn1 ? "Above" : "Below", text_color=is_above_mn1 ? color.green : color.red)
+

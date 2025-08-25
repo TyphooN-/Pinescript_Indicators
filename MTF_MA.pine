@@ -1,0 +1,263 @@
+//@version=6
+indicator("MTF MA", "MTF_MA", overlay=true, max_labels_count=500, max_lines_count=500)
+
+// Input Settings
+group_info = "INFO TEXT SETTINGS"
+font_size = input.int(8, "Font Size", minval=6, maxval=20, group=group_info)
+horiz_pos = input.int(310, "Horizontal Position", minval=0, maxval=500, group=group_info)
+vert_pos = input.int(130, "Vertical Position", minval=0, maxval=500, group=group_info)
+show_info_panel = input.bool(true, "Show Info Panel", group=group_info)
+table_position = input.string("Top Right", "Table Position", options=["Top Left", "Top Right", "Bottom Left", "Bottom Right", "Middle Left", "Middle Right"], group=group_info)
+
+// Moving Average Settings
+ma_source = input.source(close, "MA Source")
+
+// Multi-timeframe Moving Averages
+// 1 Minute Timeframe
+m1_200sma = request.security(syminfo.tickerid, "1", ta.sma(ma_source, 200), lookahead=barmerge.lookahead_off)
+m1_100sma = request.security(syminfo.tickerid, "1", ta.sma(ma_source, 100), lookahead=barmerge.lookahead_off)
+m1_50sma = request.security(syminfo.tickerid, "1", ta.sma(ma_source, 50), lookahead=barmerge.lookahead_off)
+m1_20sma = request.security(syminfo.tickerid, "1", ta.sma(ma_source, 20), lookahead=barmerge.lookahead_off)
+m1_10sma = request.security(syminfo.tickerid, "1", ta.sma(ma_source, 10), lookahead=barmerge.lookahead_off)
+
+// 5 Minute Timeframe
+m5_200sma = request.security(syminfo.tickerid, "5", ta.sma(ma_source, 200), lookahead=barmerge.lookahead_off)
+m5_100sma = request.security(syminfo.tickerid, "5", ta.sma(ma_source, 100), lookahead=barmerge.lookahead_off)
+m5_50sma = request.security(syminfo.tickerid, "5", ta.sma(ma_source, 50), lookahead=barmerge.lookahead_off)
+m5_20sma = request.security(syminfo.tickerid, "5", ta.sma(ma_source, 20), lookahead=barmerge.lookahead_off)
+m5_10sma = request.security(syminfo.tickerid, "5", ta.sma(ma_source, 10), lookahead=barmerge.lookahead_off)
+
+// 15 Minute Timeframe
+m15_200sma = request.security(syminfo.tickerid, "15", ta.sma(ma_source, 200), lookahead=barmerge.lookahead_off)
+m15_100sma = request.security(syminfo.tickerid, "15", ta.sma(ma_source, 100), lookahead=barmerge.lookahead_off)
+m15_50sma = request.security(syminfo.tickerid, "15", ta.sma(ma_source, 50), lookahead=barmerge.lookahead_off)
+m15_20sma = request.security(syminfo.tickerid, "15", ta.sma(ma_source, 20), lookahead=barmerge.lookahead_off)
+m15_10sma = request.security(syminfo.tickerid, "15", ta.sma(ma_source, 10), lookahead=barmerge.lookahead_off)
+
+// 30 Minute Timeframe
+m30_200sma = request.security(syminfo.tickerid, "30", ta.sma(ma_source, 200), lookahead=barmerge.lookahead_off)
+m30_100sma = request.security(syminfo.tickerid, "30", ta.sma(ma_source, 100), lookahead=barmerge.lookahead_off)
+m30_50sma = request.security(syminfo.tickerid, "30", ta.sma(ma_source, 50), lookahead=barmerge.lookahead_off)
+m30_20sma = request.security(syminfo.tickerid, "30", ta.sma(ma_source, 20), lookahead=barmerge.lookahead_off)
+m30_10sma = request.security(syminfo.tickerid, "30", ta.sma(ma_source, 10), lookahead=barmerge.lookahead_off)
+
+// 1 Hour Timeframe
+h1_200sma = request.security(syminfo.tickerid, "60", ta.sma(ma_source, 200), lookahead=barmerge.lookahead_off)
+h1_100sma = request.security(syminfo.tickerid, "60", ta.sma(ma_source, 100), lookahead=barmerge.lookahead_off)
+h1_50sma = request.security(syminfo.tickerid, "60", ta.sma(ma_source, 50), lookahead=barmerge.lookahead_off)
+h1_20sma = request.security(syminfo.tickerid, "60", ta.sma(ma_source, 20), lookahead=barmerge.lookahead_off)
+h1_10sma = request.security(syminfo.tickerid, "60", ta.sma(ma_source, 10), lookahead=barmerge.lookahead_off)
+
+// 4 Hour Timeframe
+h4_200sma = request.security(syminfo.tickerid, "240", ta.sma(ma_source, 200), lookahead=barmerge.lookahead_off)
+h4_100sma = request.security(syminfo.tickerid, "240", ta.sma(ma_source, 100), lookahead=barmerge.lookahead_off)
+h4_50sma = request.security(syminfo.tickerid, "240", ta.sma(ma_source, 50), lookahead=barmerge.lookahead_off)
+h4_20sma = request.security(syminfo.tickerid, "240", ta.sma(ma_source, 20), lookahead=barmerge.lookahead_off)
+h4_10sma = request.security(syminfo.tickerid, "240", ta.sma(ma_source, 10), lookahead=barmerge.lookahead_off)
+
+// Daily Timeframe
+d1_200sma = request.security(syminfo.tickerid, "1D", ta.sma(ma_source, 200), lookahead=barmerge.lookahead_off)
+d1_100sma = request.security(syminfo.tickerid, "1D", ta.sma(ma_source, 100), lookahead=barmerge.lookahead_off)
+d1_50sma = request.security(syminfo.tickerid, "1D", ta.sma(ma_source, 50), lookahead=barmerge.lookahead_off)
+d1_20sma = request.security(syminfo.tickerid, "1D", ta.sma(ma_source, 20), lookahead=barmerge.lookahead_off)
+d1_10sma = request.security(syminfo.tickerid, "1D", ta.sma(ma_source, 10), lookahead=barmerge.lookahead_off)
+
+// Weekly Timeframe
+w1_200sma = request.security(syminfo.tickerid, "1W", ta.sma(ma_source, 200), lookahead=barmerge.lookahead_off)
+w1_100sma = request.security(syminfo.tickerid, "1W", ta.sma(ma_source, 100), lookahead=barmerge.lookahead_off)
+w1_50sma = request.security(syminfo.tickerid, "1W", ta.sma(ma_source, 50), lookahead=barmerge.lookahead_off)
+w1_20sma = request.security(syminfo.tickerid, "1W", ta.sma(ma_source, 20), lookahead=barmerge.lookahead_off)
+w1_10sma = request.security(syminfo.tickerid, "1W", ta.sma(ma_source, 10), lookahead=barmerge.lookahead_off)
+
+// Monthly Timeframe
+mn1_100sma = request.security(syminfo.tickerid, "1M", ta.sma(ma_source, 100), lookahead=barmerge.lookahead_off)
+
+// Plot the main moving averages (as shown in the original indicator plots)
+plot(h1_200sma, "H1 200SMA", color=color.red, linewidth=2)
+plot(h4_200sma, "H4 200SMA", color=color.fuchsia, linewidth=2)
+plot(d1_200sma, "D1 200SMA", color=color.fuchsia, linewidth=2)
+plot(w1_200sma, "W1 200SMA", color=color.fuchsia, linewidth=2)
+plot(w1_100sma, "W1 100SMA", color=color.fuchsia, linewidth=2)
+plot(mn1_100sma, "MN1 100SMA", color=color.fuchsia, linewidth=2)
+
+// Current price
+current_price = close
+
+// Check price position relative to 200 SMAs
+is_above_m1_200sma = current_price > m1_200sma
+is_above_m5_200sma = current_price > m5_200sma
+is_above_m15_200sma = current_price > m15_200sma
+is_above_m30_200sma = current_price > m30_200sma
+is_above_h1_200sma = current_price > h1_200sma
+is_above_h4_200sma = current_price > h4_200sma
+is_above_d1_200sma = current_price > d1_200sma
+is_above_w1_200sma = current_price > w1_200sma
+
+// Check 50/200 SMA crosses (Golden cross when 50>200 = bullish, Death cross when 50<200 = bearish)
+is_golden_cross_m1 = m1_50sma > m1_200sma
+is_golden_cross_m5 = m5_50sma > m5_200sma
+is_golden_cross_m15 = m15_50sma > m15_200sma
+is_golden_cross_m30 = m30_50sma > m30_200sma
+is_golden_cross_h1 = h1_50sma > h1_200sma
+is_golden_cross_h4 = h4_50sma > h4_200sma
+is_golden_cross_d1 = d1_50sma > d1_200sma
+is_golden_cross_w1 = w1_50sma > w1_200sma
+
+// Check 100/200 SMA crosses
+is_100_200_cross_m1 = m1_100sma > m1_200sma
+is_100_200_cross_m5 = m5_100sma > m5_200sma
+is_100_200_cross_m15 = m15_100sma > m15_200sma
+is_100_200_cross_m30 = m30_100sma > m30_200sma
+is_100_200_cross_h1 = h1_100sma > h1_200sma
+is_100_200_cross_h4 = h4_100sma > h4_200sma
+is_100_200_cross_d1 = d1_100sma > d1_200sma
+is_100_200_cross_w1 = w1_100sma > w1_200sma
+
+// Check 20/50 SMA crosses
+is_20_50_cross_m1 = m1_20sma > m1_50sma
+is_20_50_cross_m5 = m5_20sma > m5_50sma
+is_20_50_cross_m15 = m15_20sma > m15_50sma
+is_20_50_cross_m30 = m30_20sma > m30_50sma
+is_20_50_cross_h1 = h1_20sma > h1_50sma
+is_20_50_cross_h4 = h4_20sma > h4_50sma
+is_20_50_cross_d1 = d1_20sma > d1_50sma
+is_20_50_cross_w1 = w1_20sma > w1_50sma
+
+// Check 10/20 SMA crosses
+is_10_20_cross_m1 = m1_10sma > m1_20sma
+is_10_20_cross_m5 = m5_10sma > m5_20sma
+is_10_20_cross_m15 = m15_10sma > m15_20sma
+is_10_20_cross_m30 = m30_10sma > m30_20sma
+is_10_20_cross_h1 = h1_10sma > h1_20sma
+is_10_20_cross_h4 = h4_10sma > h4_20sma
+is_10_20_cross_d1 = d1_10sma > d1_20sma
+is_10_20_cross_w1 = w1_10sma > w1_20sma
+
+// Bull/Bear Power Calculation
+// Count LTF conditions (M1, M5, M15, M30)
+ltf_bull_200 = (is_above_m1_200sma ? 1 : 0) + (is_above_m5_200sma ? 1 : 0) + (is_above_m15_200sma ? 1 : 0) + (is_above_m30_200sma ? 1 : 0)
+ltf_bull_golden = (is_golden_cross_m1 ? 1 : 0) + (is_golden_cross_m5 ? 1 : 0) + (is_golden_cross_m15 ? 1 : 0) + (is_golden_cross_m30 ? 1 : 0)
+ltf_bull_100_200 = (is_100_200_cross_m1 ? 1 : 0) + (is_100_200_cross_m5 ? 1 : 0) + (is_100_200_cross_m15 ? 1 : 0) + (is_100_200_cross_m30 ? 1 : 0)
+ltf_bull_20_50 = (is_20_50_cross_m1 ? 1 : 0) + (is_20_50_cross_m5 ? 1 : 0) + (is_20_50_cross_m15 ? 1 : 0) + (is_20_50_cross_m30 ? 1 : 0)
+ltf_bull_10_20 = (is_10_20_cross_m1 ? 1 : 0) + (is_10_20_cross_m5 ? 1 : 0) + (is_10_20_cross_m15 ? 1 : 0) + (is_10_20_cross_m30 ? 1 : 0)
+
+// Count HTF conditions (H1, H4, D1, W1)
+htf_bull_200 = (is_above_h1_200sma ? 1 : 0) + (is_above_h4_200sma ? 1 : 0) + (is_above_d1_200sma ? 1 : 0) + (is_above_w1_200sma ? 1 : 0)
+htf_bull_golden = (is_golden_cross_h1 ? 1 : 0) + (is_golden_cross_h4 ? 1 : 0) + (is_golden_cross_d1 ? 1 : 0) + (is_golden_cross_w1 ? 1 : 0)
+htf_bull_100_200 = (is_100_200_cross_h1 ? 1 : 0) + (is_100_200_cross_h4 ? 1 : 0) + (is_100_200_cross_d1 ? 1 : 0) + (is_100_200_cross_w1 ? 1 : 0)
+htf_bull_20_50 = (is_20_50_cross_h1 ? 1 : 0) + (is_20_50_cross_h4 ? 1 : 0) + (is_20_50_cross_d1 ? 1 : 0) + (is_20_50_cross_w1 ? 1 : 0)
+htf_bull_10_20 = (is_10_20_cross_h1 ? 1 : 0) + (is_10_20_cross_h4 ? 1 : 0) + (is_10_20_cross_d1 ? 1 : 0) + (is_10_20_cross_w1 ? 1 : 0)
+
+// Calculate total bull power
+total_ltf_bull = ltf_bull_200 + ltf_bull_golden + ltf_bull_100_200 + ltf_bull_20_50 + ltf_bull_10_20
+total_htf_bull = htf_bull_200 + htf_bull_golden + htf_bull_100_200 + htf_bull_20_50 + htf_bull_10_20
+
+// Calculate bear power (inverse of bull)
+total_ltf_bear = 20 - total_ltf_bull  // 4 timeframes × 5 conditions = 20 total
+total_htf_bear = 20 - total_htf_bull
+
+// Final power scores (multiply by 5 as in original)
+ltf_bull_power = total_ltf_bull * 5
+ltf_bear_power = total_ltf_bear * 5
+htf_bull_power = total_htf_bull * 5
+htf_bear_power = total_htf_bear * 5
+
+// Function to get table position
+get_table_position() =>
+    switch table_position
+        "Top Left" => position.top_left
+        "Top Right" => position.top_right
+        "Bottom Left" => position.bottom_left
+        "Bottom Right" => position.bottom_right
+        "Middle Left" => position.middle_left
+        "Middle Right" => position.middle_right
+        => position.top_right
+
+// Function to get condition color
+get_color(condition) =>
+    condition ? color.lime : color.red
+
+// Create detailed information table
+var table info_table = table.new(get_table_position(), 9, 20, bgcolor=color.new(color.black, 80), border_width=1)
+
+if barstate.islast and show_info_panel
+    // Header row with all timeframes
+    table.cell(info_table, 0, 0, "200 SMA", text_color=color.white, text_size=size.tiny)
+    table.cell(info_table, 1, 0, "M1", text_color=color.white, text_size=size.tiny)
+    table.cell(info_table, 2, 0, "M5", text_color=color.white, text_size=size.tiny)
+    table.cell(info_table, 3, 0, "M15", text_color=color.white, text_size=size.tiny)
+    table.cell(info_table, 4, 0, "M30", text_color=color.white, text_size=size.tiny)
+    table.cell(info_table, 5, 0, "H1", text_color=color.white, text_size=size.tiny)
+    table.cell(info_table, 6, 0, "H4", text_color=color.white, text_size=size.tiny)
+    table.cell(info_table, 7, 0, "D1", text_color=color.white, text_size=size.tiny)
+    table.cell(info_table, 8, 0, "W1", text_color=color.white, text_size=size.tiny)
+    
+    // 200 SMA row
+    table.cell(info_table, 0, 1, "200 SMA", text_color=color.white, text_size=size.tiny)
+    table.cell(info_table, 1, 1, "●", text_color=get_color(is_above_m1_200sma), text_size=size.small)
+    table.cell(info_table, 2, 1, "●", text_color=get_color(is_above_m5_200sma), text_size=size.small)
+    table.cell(info_table, 3, 1, "●", text_color=get_color(is_above_m15_200sma), text_size=size.small)
+    table.cell(info_table, 4, 1, "●", text_color=get_color(is_above_m30_200sma), text_size=size.small)
+    table.cell(info_table, 5, 1, "●", text_color=get_color(is_above_h1_200sma), text_size=size.small)
+    table.cell(info_table, 6, 1, "●", text_color=get_color(is_above_h4_200sma), text_size=size.small)
+    table.cell(info_table, 7, 1, "●", text_color=get_color(is_above_d1_200sma), text_size=size.small)
+    table.cell(info_table, 8, 1, "●", text_color=get_color(is_above_w1_200sma), text_size=size.small)
+    
+    // DEATH/GOLDEN cross row (50 vs 200 SMA)
+    table.cell(info_table, 0, 2, "50/200", text_color=color.white, text_size=size.tiny)
+    table.cell(info_table, 1, 2, "●", text_color=get_color(is_golden_cross_m1), text_size=size.small)
+    table.cell(info_table, 2, 2, "●", text_color=get_color(is_golden_cross_m5), text_size=size.small)
+    table.cell(info_table, 3, 2, "●", text_color=get_color(is_golden_cross_m15), text_size=size.small)
+    table.cell(info_table, 4, 2, "●", text_color=get_color(is_golden_cross_m30), text_size=size.small)
+    table.cell(info_table, 5, 2, "●", text_color=get_color(is_golden_cross_h1), text_size=size.small)
+    table.cell(info_table, 6, 2, "●", text_color=get_color(is_golden_cross_h4), text_size=size.small)
+    table.cell(info_table, 7, 2, "●", text_color=get_color(is_golden_cross_d1), text_size=size.small)
+    table.cell(info_table, 8, 2, "●", text_color=get_color(is_golden_cross_w1), text_size=size.small)
+    
+    // 100/200 row
+    table.cell(info_table, 0, 3, "100/200", text_color=color.white, text_size=size.tiny)
+    table.cell(info_table, 1, 3, "●", text_color=get_color(is_100_200_cross_m1), text_size=size.small)
+    table.cell(info_table, 2, 3, "●", text_color=get_color(is_100_200_cross_m5), text_size=size.small)
+    table.cell(info_table, 3, 3, "●", text_color=get_color(is_100_200_cross_m15), text_size=size.small)
+    table.cell(info_table, 4, 3, "●", text_color=get_color(is_100_200_cross_m30), text_size=size.small)
+    table.cell(info_table, 5, 3, "●", text_color=get_color(is_100_200_cross_h1), text_size=size.small)
+    table.cell(info_table, 6, 3, "●", text_color=get_color(is_100_200_cross_h4), text_size=size.small)
+    table.cell(info_table, 7, 3, "●", text_color=get_color(is_100_200_cross_d1), text_size=size.small)
+    table.cell(info_table, 8, 3, "●", text_color=get_color(is_100_200_cross_w1), text_size=size.small)
+    
+    // 20/50 row
+    table.cell(info_table, 0, 4, "20/50", text_color=color.white, text_size=size.tiny)
+    table.cell(info_table, 1, 4, "●", text_color=get_color(is_20_50_cross_m1), text_size=size.small)
+    table.cell(info_table, 2, 4, "●", text_color=get_color(is_20_50_cross_m5), text_size=size.small)
+    table.cell(info_table, 3, 4, "●", text_color=get_color(is_20_50_cross_m15), text_size=size.small)
+    table.cell(info_table, 4, 4, "●", text_color=get_color(is_20_50_cross_m30), text_size=size.small)
+    table.cell(info_table, 5, 4, "●", text_color=get_color(is_20_50_cross_h1), text_size=size.small)
+    table.cell(info_table, 6, 4, "●", text_color=get_color(is_20_50_cross_h4), text_size=size.small)
+    table.cell(info_table, 7, 4, "●", text_color=get_color(is_20_50_cross_d1), text_size=size.small)
+    table.cell(info_table, 8, 4, "●", text_color=get_color(is_20_50_cross_w1), text_size=size.small)
+    
+    // 10/20 row
+    table.cell(info_table, 0, 5, "10/20", text_color=color.white, text_size=size.tiny)
+    table.cell(info_table, 1, 5, "●", text_color=get_color(is_10_20_cross_m1), text_size=size.small)
+    table.cell(info_table, 2, 5, "●", text_color=get_color(is_10_20_cross_m5), text_size=size.small)
+    table.cell(info_table, 3, 5, "●", text_color=get_color(is_10_20_cross_m15), text_size=size.small)
+    table.cell(info_table, 4, 5, "●", text_color=get_color(is_10_20_cross_m30), text_size=size.small)
+    table.cell(info_table, 5, 5, "●", text_color=get_color(is_10_20_cross_h1), text_size=size.small)
+    table.cell(info_table, 6, 5, "●", text_color=get_color(is_10_20_cross_h4), text_size=size.small)
+    table.cell(info_table, 7, 5, "●", text_color=get_color(is_10_20_cross_d1), text_size=size.small)
+    table.cell(info_table, 8, 5, "●", text_color=get_color(is_10_20_cross_w1), text_size=size.small)
+    
+    // Power summary
+    ltf_bull_color = ltf_bull_power > ltf_bear_power ? color.lime : color.white
+    ltf_bear_color = ltf_bear_power > ltf_bull_power ? color.red : color.white
+    htf_bull_color = htf_bull_power > htf_bear_power ? color.lime : color.white
+    htf_bear_color = htf_bear_power > htf_bull_power ? color.red : color.white
+    
+    table.cell(info_table, 0, 7, "LTF Bull Power: " + str.tostring(ltf_bull_power), text_color=ltf_bull_color, text_size=size.tiny)
+    table.cell(info_table, 0, 8, "LTF Bear Power: " + str.tostring(ltf_bear_power), text_color=ltf_bear_color, text_size=size.tiny)
+    table.cell(info_table, 0, 9, "HTF Bull Power: " + str.tostring(htf_bull_power), text_color=htf_bull_color, text_size=size.tiny)
+    table.cell(info_table, 0, 10, "HTF Bear Power: " + str.tostring(htf_bear_power), text_color=htf_bear_color, text_size=size.tiny)
+
+// Alert conditions
+alertcondition(htf_bull_power > htf_bear_power and ltf_bull_power > ltf_bear_power, title="Strong Bull Signal", message="Both HTF and LTF showing bullish sentiment")
+alertcondition(htf_bear_power > htf_bull_power and ltf_bear_power > ltf_bull_power, title="Strong Bear Signal", message="Both HTF and LTF showing bearish sentiment")

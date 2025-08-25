@@ -1,0 +1,125 @@
+//@version=6
+indicator("ATR Projection", shorttitle="ATR Projection", overlay=true, max_lines_count=500)
+
+// Input parameters - ATR/Period Settings
+atr_period = input.int(14, title="ATR Period", minval=1)
+m15_atr_projections = input.bool(true, title="M15 ATR Projections")
+h1_atr_projections = input.bool(true, title="H1 ATR Projections")
+h4_atr_projections = input.bool(true, title="H4 ATR Projections")
+d1_atr_projections = input.bool(true, title="D1 ATR Projections")
+w1_atr_projections = input.bool(true, title="W1 ATR Projections")
+mn1_atr_projections = input.bool(true, title="MN1 ATR Projections")
+
+// Line Settings
+atr_line_style = input.string("Dotted", title="ATR Line Style", options=["Solid", "Dashed", "Dotted"])
+atr_line_thickness = input.int(2, title="ATR Line Thickness", minval=1, maxval=10)
+atr_line_color = input.color(color.yellow, title="ATR Line Color")
+
+// Info Text Settings
+font_size = input.string("Small", title="Font Size", options=["Tiny", "Small", "Normal", "Large"])
+font_color = input.color(color.white, title="Font Color")
+atr_info_decimals = input.int(3, title="ATR Info Decimals", minval=0, maxval=8)
+
+// Convert line style
+line_style = atr_line_style == "Solid" ? line.style_solid : atr_line_style == "Dashed" ? line.style_dashed : line.style_dotted
+
+// Convert font size
+text_size = font_size == "Tiny" ? size.tiny : font_size == "Small" ? size.small : font_size == "Normal" ? size.normal : size.large
+
+// Get ATR values from different timeframes
+atr_m15 = request.security(syminfo.tickerid, "15", ta.atr(atr_period), lookahead=barmerge.lookahead_off)
+atr_h1 = request.security(syminfo.tickerid, "60", ta.atr(atr_period), lookahead=barmerge.lookahead_off)
+atr_h4 = request.security(syminfo.tickerid, "240", ta.atr(atr_period), lookahead=barmerge.lookahead_off)
+atr_d1 = request.security(syminfo.tickerid, "D", ta.atr(atr_period), lookahead=barmerge.lookahead_off)
+atr_w1 = request.security(syminfo.tickerid, "W", ta.atr(atr_period), lookahead=barmerge.lookahead_off)
+atr_mn1 = request.security(syminfo.tickerid, "M", ta.atr(atr_period), lookahead=barmerge.lookahead_off)
+
+// Get current open prices from different timeframes
+current_open_m15 = request.security(syminfo.tickerid, "15", open, lookahead=barmerge.lookahead_off)
+current_open_h1 = request.security(syminfo.tickerid, "60", open, lookahead=barmerge.lookahead_off)
+current_open_h4 = request.security(syminfo.tickerid, "240", open, lookahead=barmerge.lookahead_off)
+current_open_d1 = request.security(syminfo.tickerid, "D", open, lookahead=barmerge.lookahead_off)
+current_open_w1 = request.security(syminfo.tickerid, "W", open, lookahead=barmerge.lookahead_off)
+current_open_mn1 = request.security(syminfo.tickerid, "M", open, lookahead=barmerge.lookahead_off)
+
+// Function to draw ATR projection lines
+draw_atr_lines(atr_value, current_open, timeframe_name, show_projections) =>
+    if show_projections and not na(atr_value) and not na(current_open) and barstate.islast
+        // Calculate projection levels
+        atr_level_above = current_open + atr_value
+        atr_level_below = current_open - atr_value
+        
+        // Draw upper projection line
+        line.new(x1=bar_index - 50, y1=atr_level_above, x2=bar_index + 20, y2=atr_level_above, color=atr_line_color, width=atr_line_thickness,style=line_style,extend=extend.right)
+        
+        // Draw lower projection line
+        line.new(x1=bar_index - 50, y1=atr_level_below, x2=bar_index + 20, y2=atr_level_below, color=atr_line_color, width=atr_line_thickness,style=line_style,extend=extend.right)
+
+// Determine which timeframes to show based on current timeframe
+current_tf_minutes = timeframe.in_seconds() / 60
+
+// Draw ATR projections based on current timeframe
+if current_tf_minutes <= 60 and current_tf_minutes != 43200  // Up to H1, not MN1
+    draw_atr_lines(atr_m15, current_open_m15, "M15", m15_atr_projections)
+
+if current_tf_minutes <= 240 and current_tf_minutes != 43200  // Up to H4, not MN1
+    draw_atr_lines(atr_h1, current_open_h1, "H1", h1_atr_projections)
+
+if current_tf_minutes <= 1440 and current_tf_minutes != 43200  // Up to D1, not MN1
+    draw_atr_lines(atr_h4, current_open_h4, "H4", h4_atr_projections)
+
+if current_tf_minutes <= 10080 and current_tf_minutes != 43200  // Up to W1, not MN1
+    draw_atr_lines(atr_d1, current_open_d1, "D1", d1_atr_projections)
+
+if w1_atr_projections
+    draw_atr_lines(atr_w1, current_open_w1, "W1", true)
+
+if mn1_atr_projections
+    draw_atr_lines(atr_mn1, current_open_mn1, "MN1", true)
+
+// Check for volatility conditions
+is_m15_above_h1 = atr_m15 >= atr_h1
+is_m15_above_h4 = atr_m15 >= atr_h4
+is_h1_above_h4 = atr_h1 >= atr_h4
+is_h4_above_d1 = atr_h4 >= atr_d1
+is_d1_above_w1 = atr_d1 > atr_w1
+is_d1_above_mn1 = atr_d1 > atr_mn1
+is_w1_above_mn1 = atr_w1 > atr_mn1
+
+// Determine font colors based on volatility conditions
+font_color1 = (is_m15_above_h1 and is_m15_above_h4 and is_h1_above_h4 and is_h4_above_d1) ? color.fuchsia : font_color
+font_color2 = (is_d1_above_w1 and is_d1_above_mn1 and is_w1_above_mn1) ? color.fuchsia : font_color
+
+// Display ATR information in a table
+if barstate.islast
+    var table atr_table = table.new(position.top_right, 7, 6, bgcolor=color.black, border_width=1)
+    
+    // Header
+    table.cell(atr_table, 0, 0, "ATR Info", text_color=font_color, bgcolor=color.gray, text_size=text_size)
+    table.cell(atr_table, 1, 0, "M15", text_color=font_color, bgcolor=color.gray, text_size=text_size)
+    table.cell(atr_table, 2, 0, "H1", text_color=font_color, bgcolor=color.gray, text_size=text_size)
+    table.cell(atr_table, 3, 0, "H4", text_color=font_color, bgcolor=color.gray, text_size=text_size)
+    table.cell(atr_table, 4, 0, "D1", text_color=font_color, bgcolor=color.gray, text_size=text_size)
+    table.cell(atr_table, 5, 0, "W1", text_color=font_color, bgcolor=color.gray, text_size=text_size)
+    table.cell(atr_table, 6, 0, "MN1", text_color=font_color, bgcolor=color.gray, text_size=text_size)
+
+    
+    // First row
+    table.cell(atr_table, 0, 1, "ATR", text_color=font_color1, text_size=text_size)
+    table.cell(atr_table, 1, 1, str.tostring(atr_m15, format.mintick), text_color=font_color1, text_size=text_size)
+    table.cell(atr_table, 2, 1, str.tostring(atr_h1, format.mintick), text_color=font_color1, text_size=text_size)
+    table.cell(atr_table, 3, 1, str.tostring(atr_h4, format.mintick), text_color=font_color1, text_size=text_size)
+    table.cell(atr_table, 4, 1, str.tostring(atr_d1, format.mintick), text_color=font_color2, text_size=text_size)
+    table.cell(atr_table, 5, 1, str.tostring(atr_w1, format.mintick), text_color=font_color2, text_size=text_size)
+    table.cell(atr_table, 6, 1, str.tostring(atr_mn1, format.mintick), text_color=font_color2, text_size=text_size)
+
+
+
+// Plot invisible ATR values for external access
+plot(atr_m15, title="ATR M15", display=display.none)
+plot(atr_h1, title="ATR H1", display=display.none)
+plot(atr_h4, title="ATR H4", display=display.none)
+plot(atr_d1, title="ATR D1", display=display.none)
+plot(atr_w1, title="ATR W1", display=display.none)
+plot(atr_mn1, title="ATR MN1", display=display.none)
+
