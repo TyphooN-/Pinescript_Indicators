@@ -1,5 +1,5 @@
 //@version=6
-indicator("MTF MA + MRSI", "MTF_MA_MRSI", overlay=false, max_labels_count=500, max_lines_count=500)
+indicator("MTF MA + MRSI", "MTF_MA_MRSI", overlay=true, max_labels_count=500, max_lines_count=500)
 
 // ============================================================================
 // INPUT SETTINGS
@@ -13,20 +13,26 @@ table_position = input.string("Top Right", "Table Position", options=["Top Left"
 // MRSI Settings
 group_mrsi = "MRSI SETTINGS"
 mrsi_length = input.int(20, "MRSI Calculation Length", minval=5, maxval=100, group=group_mrsi)
-show_mrsi = input.bool(true, "Show MRSI", group=group_mrsi)
+show_mrsi = input.bool(false, "Show MRSI", group=group_mrsi)
 sync_threshold_high = input.float(0.7, "Synchronization High Threshold", minval=0.1, maxval=1.0, step=0.1, group=group_mrsi)
 sync_threshold_low = input.float(0.3, "Synchronization Low Threshold", minval=0.1, maxval=1.0, step=0.1, group=group_mrsi)
 
 // Moving Average Settings
 group_ma = "MOVING AVERAGE SETTINGS"
 ma_source = input.source(close, "MA Source", group=group_ma)
-show_ma_plots = input.bool(false, "Show MA Plots on Chart", group=group_ma)
+show_ma_lines = input.bool(true, "Show MA Lines on Chart", group=group_ma)
+show_h1_200 = input.bool(true, "Show H1 200 SMA", group=group_ma)
+show_h4_200 = input.bool(true, "Show H4 200 SMA", group=group_ma)
+show_d1_200 = input.bool(true, "Show D1 200 SMA", group=group_ma)
+show_w1_200 = input.bool(true, "Show W1 200 SMA", group=group_ma)
+show_w1_100 = input.bool(true, "Show W1 100 SMA", group=group_ma)
+show_mn1_100 = input.bool(true, "Show MN1 100 SMA", group=group_ma)
 
 // ============================================================================
 // MRSI CALCULATION FUNCTIONS
 // ============================================================================
 
-// Calculate Activity Intensity for different timeframes
+// Calculate Activity Intensity
 calculate_activity_intensity(src, tf, length) =>
     // Get multi-timeframe data
     tf_high = request.security(syminfo.tickerid, tf, high, lookahead=barmerge.lookahead_off)
@@ -67,44 +73,67 @@ calculate_sync_score(intensity1, intensity2, length) =>
     math.abs(correlation)
 
 // ============================================================================
-// MULTI-TIMEFRAME MOVING AVERAGES
+// MULTI-TIMEFRAME MOVING AVERAGES (PROPER IMPLEMENTATION)
 // ============================================================================
+
+// 1 Minute Timeframe
+m1_200sma = request.security(syminfo.tickerid, "1", ta.sma(ma_source, 200), lookahead=barmerge.lookahead_off)
+m1_100sma = request.security(syminfo.tickerid, "1", ta.sma(ma_source, 100), lookahead=barmerge.lookahead_off)
+m1_50sma = request.security(syminfo.tickerid, "1", ta.sma(ma_source, 50), lookahead=barmerge.lookahead_off)
+m1_20sma = request.security(syminfo.tickerid, "1", ta.sma(ma_source, 20), lookahead=barmerge.lookahead_off)
+m1_10sma = request.security(syminfo.tickerid, "1", ta.sma(ma_source, 10), lookahead=barmerge.lookahead_off)
 
 // 5 Minute Timeframe
 m5_200sma = request.security(syminfo.tickerid, "5", ta.sma(ma_source, 200), lookahead=barmerge.lookahead_off)
 m5_100sma = request.security(syminfo.tickerid, "5", ta.sma(ma_source, 100), lookahead=barmerge.lookahead_off)
 m5_50sma = request.security(syminfo.tickerid, "5", ta.sma(ma_source, 50), lookahead=barmerge.lookahead_off)
 m5_20sma = request.security(syminfo.tickerid, "5", ta.sma(ma_source, 20), lookahead=barmerge.lookahead_off)
+m5_10sma = request.security(syminfo.tickerid, "5", ta.sma(ma_source, 10), lookahead=barmerge.lookahead_off)
 
 // 15 Minute Timeframe
 m15_200sma = request.security(syminfo.tickerid, "15", ta.sma(ma_source, 200), lookahead=barmerge.lookahead_off)
 m15_100sma = request.security(syminfo.tickerid, "15", ta.sma(ma_source, 100), lookahead=barmerge.lookahead_off)
 m15_50sma = request.security(syminfo.tickerid, "15", ta.sma(ma_source, 50), lookahead=barmerge.lookahead_off)
 m15_20sma = request.security(syminfo.tickerid, "15", ta.sma(ma_source, 20), lookahead=barmerge.lookahead_off)
+m15_10sma = request.security(syminfo.tickerid, "15", ta.sma(ma_source, 10), lookahead=barmerge.lookahead_off)
 
 // 30 Minute Timeframe
 m30_200sma = request.security(syminfo.tickerid, "30", ta.sma(ma_source, 200), lookahead=barmerge.lookahead_off)
 m30_100sma = request.security(syminfo.tickerid, "30", ta.sma(ma_source, 100), lookahead=barmerge.lookahead_off)
 m30_50sma = request.security(syminfo.tickerid, "30", ta.sma(ma_source, 50), lookahead=barmerge.lookahead_off)
 m30_20sma = request.security(syminfo.tickerid, "30", ta.sma(ma_source, 20), lookahead=barmerge.lookahead_off)
+m30_10sma = request.security(syminfo.tickerid, "30", ta.sma(ma_source, 10), lookahead=barmerge.lookahead_off)
 
 // 1 Hour Timeframe
 h1_200sma = request.security(syminfo.tickerid, "60", ta.sma(ma_source, 200), lookahead=barmerge.lookahead_off)
 h1_100sma = request.security(syminfo.tickerid, "60", ta.sma(ma_source, 100), lookahead=barmerge.lookahead_off)
 h1_50sma = request.security(syminfo.tickerid, "60", ta.sma(ma_source, 50), lookahead=barmerge.lookahead_off)
 h1_20sma = request.security(syminfo.tickerid, "60", ta.sma(ma_source, 20), lookahead=barmerge.lookahead_off)
+h1_10sma = request.security(syminfo.tickerid, "60", ta.sma(ma_source, 10), lookahead=barmerge.lookahead_off)
 
 // 4 Hour Timeframe
 h4_200sma = request.security(syminfo.tickerid, "240", ta.sma(ma_source, 200), lookahead=barmerge.lookahead_off)
 h4_100sma = request.security(syminfo.tickerid, "240", ta.sma(ma_source, 100), lookahead=barmerge.lookahead_off)
 h4_50sma = request.security(syminfo.tickerid, "240", ta.sma(ma_source, 50), lookahead=barmerge.lookahead_off)
 h4_20sma = request.security(syminfo.tickerid, "240", ta.sma(ma_source, 20), lookahead=barmerge.lookahead_off)
+h4_10sma = request.security(syminfo.tickerid, "240", ta.sma(ma_source, 10), lookahead=barmerge.lookahead_off)
 
 // Daily Timeframe
 d1_200sma = request.security(syminfo.tickerid, "1D", ta.sma(ma_source, 200), lookahead=barmerge.lookahead_off)
 d1_100sma = request.security(syminfo.tickerid, "1D", ta.sma(ma_source, 100), lookahead=barmerge.lookahead_off)
 d1_50sma = request.security(syminfo.tickerid, "1D", ta.sma(ma_source, 50), lookahead=barmerge.lookahead_off)
 d1_20sma = request.security(syminfo.tickerid, "1D", ta.sma(ma_source, 20), lookahead=barmerge.lookahead_off)
+d1_10sma = request.security(syminfo.tickerid, "1D", ta.sma(ma_source, 10), lookahead=barmerge.lookahead_off)
+
+// Weekly Timeframe
+w1_200sma = request.security(syminfo.tickerid, "1W", ta.sma(ma_source, 200), lookahead=barmerge.lookahead_off)
+w1_100sma = request.security(syminfo.tickerid, "1W", ta.sma(ma_source, 100), lookahead=barmerge.lookahead_off)
+w1_50sma = request.security(syminfo.tickerid, "1W", ta.sma(ma_source, 50), lookahead=barmerge.lookahead_off)
+w1_20sma = request.security(syminfo.tickerid, "1W", ta.sma(ma_source, 20), lookahead=barmerge.lookahead_off)
+w1_10sma = request.security(syminfo.tickerid, "1W", ta.sma(ma_source, 10), lookahead=barmerge.lookahead_off)
+
+// Monthly Timeframe
+mn1_100sma = request.security(syminfo.tickerid, "1M", ta.sma(ma_source, 100), lookahead=barmerge.lookahead_off)
 
 // ============================================================================
 // MRSI CALCULATIONS
@@ -139,36 +168,94 @@ mrsi_market_state = mrsi_sync_score > sync_threshold_high and mrsi_stability > 0
                    mrsi_sync_score < sync_threshold_low or mrsi_stability < 0.3 ? -1 : 0
 
 // ============================================================================
-// MTF MA ANALYSIS
+// MTF MA ANALYSIS (PROPER IMPLEMENTATION)
 // ============================================================================
 
 // Current price
 current_price = close
 
 // Check price position relative to 200 SMAs
+is_above_m1_200sma = current_price > m1_200sma
 is_above_m5_200sma = current_price > m5_200sma
 is_above_m15_200sma = current_price > m15_200sma
 is_above_m30_200sma = current_price > m30_200sma
 is_above_h1_200sma = current_price > h1_200sma
 is_above_h4_200sma = current_price > h4_200sma
 is_above_d1_200sma = current_price > d1_200sma
+is_above_w1_200sma = current_price > w1_200sma
 
-// Check golden/death crosses (50 vs 200 SMA)
+// Check 50/200 SMA crosses (Golden cross when 50>200 = bullish, Death cross when 50<200 = bearish)
+is_golden_cross_m1 = m1_50sma > m1_200sma
 is_golden_cross_m5 = m5_50sma > m5_200sma
 is_golden_cross_m15 = m15_50sma > m15_200sma
 is_golden_cross_m30 = m30_50sma > m30_200sma
 is_golden_cross_h1 = h1_50sma > h1_200sma
 is_golden_cross_h4 = h4_50sma > h4_200sma
 is_golden_cross_d1 = d1_50sma > d1_200sma
+is_golden_cross_w1 = w1_50sma > w1_200sma
 
-// Calculate MTF bull/bear power
-ltf_bull_200 = (is_above_m5_200sma ? 1 : 0) + (is_above_m15_200sma ? 1 : 0) + (is_above_m30_200sma ? 1 : 0)
-ltf_bull_golden = (is_golden_cross_m5 ? 1 : 0) + (is_golden_cross_m15 ? 1 : 0) + (is_golden_cross_m30 ? 1 : 0)
-htf_bull_200 = (is_above_h1_200sma ? 1 : 0) + (is_above_h4_200sma ? 1 : 0) + (is_above_d1_200sma ? 1 : 0)
-htf_bull_golden = (is_golden_cross_h1 ? 1 : 0) + (is_golden_cross_h4 ? 1 : 0) + (is_golden_cross_d1 ? 1 : 0)
+// Check 100/200 SMA crosses
+is_100_200_cross_m1 = m1_100sma > m1_200sma
+is_100_200_cross_m5 = m5_100sma > m5_200sma
+is_100_200_cross_m15 = m15_100sma > m15_200sma
+is_100_200_cross_m30 = m30_100sma > m30_200sma
+is_100_200_cross_h1 = h1_100sma > h1_200sma
+is_100_200_cross_h4 = h4_100sma > h4_200sma
+is_100_200_cross_d1 = d1_100sma > d1_200sma
+is_100_200_cross_w1 = w1_100sma > w1_200sma
 
-mtf_bull_power = (ltf_bull_200 + ltf_bull_golden + htf_bull_200 + htf_bull_golden) / 12 * 100
-mtf_bear_power = 100 - mtf_bull_power
+// Check 20/50 SMA crosses
+is_20_50_cross_m1 = m1_20sma > m1_50sma
+is_20_50_cross_m5 = m5_20sma > m5_50sma
+is_20_50_cross_m15 = m15_20sma > m15_50sma
+is_20_50_cross_m30 = m30_20sma > m30_50sma
+is_20_50_cross_h1 = h1_20sma > h1_50sma
+is_20_50_cross_h4 = h4_20sma > h4_50sma
+is_20_50_cross_d1 = d1_20sma > d1_50sma
+is_20_50_cross_w1 = w1_20sma > w1_50sma
+
+// Check 10/20 SMA crosses
+is_10_20_cross_m1 = m1_10sma > m1_20sma
+is_10_20_cross_m5 = m5_10sma > m5_20sma
+is_10_20_cross_m15 = m15_10sma > m15_20sma
+is_10_20_cross_m30 = m30_10sma > m30_20sma
+is_10_20_cross_h1 = h1_10sma > h1_20sma
+is_10_20_cross_h4 = h4_10sma > h4_20sma
+is_10_20_cross_d1 = d1_10sma > d1_20sma
+is_10_20_cross_w1 = w1_10sma > w1_20sma
+
+// Bull/Bear Power Calculation
+// Count LTF conditions (M1, M5, M15, M30)
+ltf_bull_200 = (is_above_m1_200sma ? 1 : 0) + (is_above_m5_200sma ? 1 : 0) + (is_above_m15_200sma ? 1 : 0) + (is_above_m30_200sma ? 1 : 0)
+ltf_bull_golden = (is_golden_cross_m1 ? 1 : 0) + (is_golden_cross_m5 ? 1 : 0) + (is_golden_cross_m15 ? 1 : 0) + (is_golden_cross_m30 ? 1 : 0)
+ltf_bull_100_200 = (is_100_200_cross_m1 ? 1 : 0) + (is_100_200_cross_m5 ? 1 : 0) + (is_100_200_cross_m15 ? 1 : 0) + (is_100_200_cross_m30 ? 1 : 0)
+ltf_bull_20_50 = (is_20_50_cross_m1 ? 1 : 0) + (is_20_50_cross_m5 ? 1 : 0) + (is_20_50_cross_m15 ? 1 : 0) + (is_20_50_cross_m30 ? 1 : 0)
+ltf_bull_10_20 = (is_10_20_cross_m1 ? 1 : 0) + (is_10_20_cross_m5 ? 1 : 0) + (is_10_20_cross_m15 ? 1 : 0) + (is_10_20_cross_m30 ? 1 : 0)
+
+// Count HTF conditions (H1, H4, D1, W1)
+htf_bull_200 = (is_above_h1_200sma ? 1 : 0) + (is_above_h4_200sma ? 1 : 0) + (is_above_d1_200sma ? 1 : 0) + (is_above_w1_200sma ? 1 : 0)
+htf_bull_golden = (is_golden_cross_h1 ? 1 : 0) + (is_golden_cross_h4 ? 1 : 0) + (is_golden_cross_d1 ? 1 : 0) + (is_golden_cross_w1 ? 1 : 0)
+htf_bull_100_200 = (is_100_200_cross_h1 ? 1 : 0) + (is_100_200_cross_h4 ? 1 : 0) + (is_100_200_cross_d1 ? 1 : 0) + (is_100_200_cross_w1 ? 1 : 0)
+htf_bull_20_50 = (is_20_50_cross_h1 ? 1 : 0) + (is_20_50_cross_h4 ? 1 : 0) + (is_20_50_cross_d1 ? 1 : 0) + (is_20_50_cross_w1 ? 1 : 0)
+htf_bull_10_20 = (is_10_20_cross_h1 ? 1 : 0) + (is_10_20_cross_h4 ? 1 : 0) + (is_10_20_cross_d1 ? 1 : 0) + (is_10_20_cross_w1 ? 1 : 0)
+
+// Calculate total bull power
+total_ltf_bull = ltf_bull_200 + ltf_bull_golden + ltf_bull_100_200 + ltf_bull_20_50 + ltf_bull_10_20
+total_htf_bull = htf_bull_200 + htf_bull_golden + htf_bull_100_200 + htf_bull_20_50 + htf_bull_10_20
+
+// Calculate bear power (inverse of bull)
+total_ltf_bear = 20 - total_ltf_bull  // 4 timeframes × 5 conditions = 20 total
+total_htf_bear = 20 - total_htf_bull
+
+// Final power scores (multiply by 5 as in original)
+ltf_bull_power = total_ltf_bull * 5
+ltf_bear_power = total_ltf_bear * 5
+htf_bull_power = total_htf_bull * 5
+htf_bear_power = total_htf_bear * 5
+
+// Combined MTF power
+mtf_bull_power = (ltf_bull_power + htf_bull_power) / 2
+mtf_bear_power = (ltf_bear_power + htf_bear_power) / 2
 
 // ============================================================================
 // COMBINED SIGNAL
@@ -181,28 +268,35 @@ combined_signal = (mrsi_signal_strength * 0.6) + (mtf_bull_power / 100 * 0.4)
 // PLOTS
 // ============================================================================
 
-// MRSI Plots
-plot(show_mrsi ? mrsi_sync_score * 100 : na, "MRSI Sync Score", color=color.new(color.blue, 0), linewidth=2)
-plot(show_mrsi ? mrsi_stability * 100 : na, "MRSI Stability", color=color.new(color.purple, 0), linewidth=1)
-plot(show_mrsi ? mrsi_signal_strength * 100 : na, "MRSI Signal Strength", color=color.new(color.orange, 0), linewidth=2)
+// MTF MA Line Plots (from MTF_MA.pine)
+plot(show_ma_lines and show_h1_200 ? h1_200sma : na, "H1 200SMA", color=color.red, linewidth=2)
+plot(show_ma_lines and show_h4_200 ? h4_200sma : na, "H4 200SMA", color=color.fuchsia, linewidth=2)
+plot(show_ma_lines and show_d1_200 ? d1_200sma : na, "D1 200SMA", color=color.blue, linewidth=2)
+plot(show_ma_lines and show_w1_200 ? w1_200sma : na, "W1 200SMA", color=color.purple, linewidth=2)
+plot(show_ma_lines and show_w1_100 ? w1_100sma : na, "W1 100SMA", color=color.orange, linewidth=2)
+plot(show_ma_lines and show_mn1_100 ? mn1_100sma : na, "MN1 100SMA", color=color.yellow, linewidth=3)
 
-// MTF Power Plots
-plot(mtf_bull_power, "MTF Bull Power", color=color.new(color.green, 0), linewidth=2)
-plot(mtf_bear_power, "MTF Bear Power", color=color.new(color.red, 0), linewidth=1)
+// MRSI Plots (commented out to avoid overlap with MTF MA lines)
+// plot(show_mrsi ? mrsi_sync_score * 100 : na, "MRSI Sync Score", color=color.new(color.blue, 0), linewidth=2)
+// plot(show_mrsi ? mrsi_stability * 100 : na, "MRSI Stability", color=color.new(color.purple, 0), linewidth=1)
+// plot(show_mrsi ? mrsi_signal_strength * 100 : na, "MRSI Signal Strength", color=color.new(color.orange, 0), linewidth=2)
 
-// Combined Signal
-plot(combined_signal * 100, "Combined Signal", color=color.new(color.yellow, 0), linewidth=3)
+// MTF Power Plots (commented out since we're showing MA lines instead)
+// plot(ltf_bull_power, "LTF Bull Power", color=color.new(color.lime, 0), linewidth=2)
+// plot(ltf_bear_power, "LTF Bear Power", color=color.new(color.red, 0), linewidth=1)
+// plot(htf_bull_power, "HTF Bull Power", color=color.new(color.green, 0), linewidth=2)
+// plot(htf_bear_power, "HTF Bear Power", color=color.new(color.maroon, 0), linewidth=1)
+// plot(mtf_bull_power, "Combined MTF Bull Power", color=color.new(color.aqua, 0), linewidth=3)
+// plot(mtf_bear_power, "Combined MTF Bear Power", color=color.new(color.orange, 0), linewidth=3)
 
-// Reference lines
-hline(sync_threshold_high * 100, "Sync High Threshold", color=color.new(color.green, 50), linestyle=hline.style_dashed)
-hline(sync_threshold_low * 100, "Sync Low Threshold", color=color.new(color.red, 50), linestyle=hline.style_dashed)
-hline(50, "Midline", color=color.new(color.gray, 50))
+// Combined Signal (commented out for overlay mode)
+// plot(combined_signal * 100, "Combined Signal", color=color.new(color.yellow, 0), linewidth=3)
 
-// Background coloring based on MRSI market state
-bgcolor(mrsi_market_state == 1 ? color.new(color.green, 95) : mrsi_market_state == -1 ? color.new(color.red, 95) : color.new(color.yellow, 98))
+// Reference lines (not applicable for overlay mode)
+// hline(50, "Midline", color=color.new(color.gray, 50))
 
 // ============================================================================
-// INFO TABLE
+// INFO TABLE (PROPER IMPLEMENTATION)
 // ============================================================================
 
 // Function to get table position
@@ -220,80 +314,92 @@ get_table_position() =>
 get_color(condition) =>
     condition ? color.lime : color.red
 
-// Create information table
-var table info_table = table.new(get_table_position(), 4, 12, bgcolor=color.new(color.black, 80), border_width=1)
+// Create detailed information table
+var table info_table = table.new(get_table_position(), 9, 20, bgcolor=color.new(color.black, 80), border_width=1)
 
 if barstate.islast and show_info_panel
-    // MRSI Section
-    table.cell(info_table, 0, 0, "MRSI ANALYSIS", text_color=color.white, text_size=size.small, bgcolor=color.new(color.blue, 70))
-    table.cell(info_table, 1, 0, "", text_color=color.white, text_size=size.small, bgcolor=color.new(color.blue, 70))
-    table.cell(info_table, 2, 0, "", text_color=color.white, text_size=size.small, bgcolor=color.new(color.blue, 70))
-    table.cell(info_table, 3, 0, "", text_color=color.white, text_size=size.small, bgcolor=color.new(color.blue, 70))
+    // Header row with all timeframes
+    table.cell(info_table, 0, 0, "MTF MA", text_color=color.white, text_size=size.tiny, bgcolor=color.new(color.blue, 70))
+    table.cell(info_table, 1, 0, "M1", text_color=color.white, text_size=size.tiny, bgcolor=color.new(color.blue, 70))
+    table.cell(info_table, 2, 0, "M5", text_color=color.white, text_size=size.tiny, bgcolor=color.new(color.blue, 70))
+    table.cell(info_table, 3, 0, "M15", text_color=color.white, text_size=size.tiny, bgcolor=color.new(color.blue, 70))
+    table.cell(info_table, 4, 0, "M30", text_color=color.white, text_size=size.tiny, bgcolor=color.new(color.blue, 70))
+    table.cell(info_table, 5, 0, "H1", text_color=color.white, text_size=size.tiny, bgcolor=color.new(color.blue, 70))
+    table.cell(info_table, 6, 0, "H4", text_color=color.white, text_size=size.tiny, bgcolor=color.new(color.blue, 70))
+    table.cell(info_table, 7, 0, "D1", text_color=color.white, text_size=size.tiny, bgcolor=color.new(color.blue, 70))
+    table.cell(info_table, 8, 0, "W1", text_color=color.white, text_size=size.tiny, bgcolor=color.new(color.blue, 70))
     
-    table.cell(info_table, 0, 1, "Sync Score:", text_color=color.white, text_size=size.tiny)
-    table.cell(info_table, 1, 1, str.tostring(math.round(mrsi_sync_score * 100, 1)) + "%", text_color=color.white, text_size=size.tiny)
-    table.cell(info_table, 2, 1, "Stability:", text_color=color.white, text_size=size.tiny)
-    table.cell(info_table, 3, 1, str.tostring(math.round(mrsi_stability * 100, 1)) + "%", text_color=color.white, text_size=size.tiny)
+    // 200 SMA row
+    table.cell(info_table, 0, 1, "200 SMA", text_color=color.white, text_size=size.tiny)
+    table.cell(info_table, 1, 1, "●", text_color=get_color(is_above_m1_200sma), text_size=size.small)
+    table.cell(info_table, 2, 1, "●", text_color=get_color(is_above_m5_200sma), text_size=size.small)
+    table.cell(info_table, 3, 1, "●", text_color=get_color(is_above_m15_200sma), text_size=size.small)
+    table.cell(info_table, 4, 1, "●", text_color=get_color(is_above_m30_200sma), text_size=size.small)
+    table.cell(info_table, 5, 1, "●", text_color=get_color(is_above_h1_200sma), text_size=size.small)
+    table.cell(info_table, 6, 1, "●", text_color=get_color(is_above_h4_200sma), text_size=size.small)
+    table.cell(info_table, 7, 1, "●", text_color=get_color(is_above_d1_200sma), text_size=size.small)
+    table.cell(info_table, 8, 1, "●", text_color=get_color(is_above_w1_200sma), text_size=size.small)
     
-    market_state_text = mrsi_market_state == 1 ? "SYNCHRONIZED" : mrsi_market_state == -1 ? "CHAOTIC" : "TRANSITIONING"
-    market_state_color = mrsi_market_state == 1 ? color.lime : mrsi_market_state == -1 ? color.red : color.yellow
+    // DEATH/GOLDEN cross row (50 vs 200 SMA)
+    table.cell(info_table, 0, 2, "50/200", text_color=color.white, text_size=size.tiny)
+    table.cell(info_table, 1, 2, "●", text_color=get_color(is_golden_cross_m1), text_size=size.small)
+    table.cell(info_table, 2, 2, "●", text_color=get_color(is_golden_cross_m5), text_size=size.small)
+    table.cell(info_table, 3, 2, "●", text_color=get_color(is_golden_cross_m15), text_size=size.small)
+    table.cell(info_table, 4, 2, "●", text_color=get_color(is_golden_cross_m30), text_size=size.small)
+    table.cell(info_table, 5, 2, "●", text_color=get_color(is_golden_cross_h1), text_size=size.small)
+    table.cell(info_table, 6, 2, "●", text_color=get_color(is_golden_cross_h4), text_size=size.small)
+    table.cell(info_table, 7, 2, "●", text_color=get_color(is_golden_cross_d1), text_size=size.small)
+    table.cell(info_table, 8, 2, "●", text_color=get_color(is_golden_cross_w1), text_size=size.small)
     
-    table.cell(info_table, 0, 2, "Market State:", text_color=color.white, text_size=size.tiny)
-    table.cell(info_table, 1, 2, market_state_text, text_color=market_state_color, text_size=size.tiny)
-    table.cell(info_table, 2, 2, "Signal:", text_color=color.white, text_size=size.tiny)
-    table.cell(info_table, 3, 2, str.tostring(math.round(mrsi_signal_strength * 100, 1)) + "%", text_color=color.white, text_size=size.tiny)
+    // 100/200 row
+    table.cell(info_table, 0, 3, "100/200", text_color=color.white, text_size=size.tiny)
+    table.cell(info_table, 1, 3, "●", text_color=get_color(is_100_200_cross_m1), text_size=size.small)
+    table.cell(info_table, 2, 3, "●", text_color=get_color(is_100_200_cross_m5), text_size=size.small)
+    table.cell(info_table, 3, 3, "●", text_color=get_color(is_100_200_cross_m15), text_size=size.small)
+    table.cell(info_table, 4, 3, "●", text_color=get_color(is_100_200_cross_m30), text_size=size.small)
+    table.cell(info_table, 5, 3, "●", text_color=get_color(is_100_200_cross_h1), text_size=size.small)
+    table.cell(info_table, 6, 3, "●", text_color=get_color(is_100_200_cross_h4), text_size=size.small)
+    table.cell(info_table, 7, 3, "●", text_color=get_color(is_100_200_cross_d1), text_size=size.small)
+    table.cell(info_table, 8, 3, "●", text_color=get_color(is_100_200_cross_w1), text_size=size.small)
     
-    // MTF MA Section
-    table.cell(info_table, 0, 3, "MTF MA ANALYSIS", text_color=color.white, text_size=size.small, bgcolor=color.new(color.green, 70))
-    table.cell(info_table, 1, 3, "", text_color=color.white, text_size=size.small, bgcolor=color.new(color.green, 70))
-    table.cell(info_table, 2, 3, "", text_color=color.white, text_size=size.small, bgcolor=color.new(color.green, 70))
-    table.cell(info_table, 3, 3, "", text_color=color.white, text_size=size.small, bgcolor=color.new(color.green, 70))
+    // 20/50 row
+    table.cell(info_table, 0, 4, "20/50", text_color=color.white, text_size=size.tiny)
+    table.cell(info_table, 1, 4, "●", text_color=get_color(is_20_50_cross_m1), text_size=size.small)
+    table.cell(info_table, 2, 4, "●", text_color=get_color(is_20_50_cross_m5), text_size=size.small)
+    table.cell(info_table, 3, 4, "●", text_color=get_color(is_20_50_cross_m15), text_size=size.small)
+    table.cell(info_table, 4, 4, "●", text_color=get_color(is_20_50_cross_m30), text_size=size.small)
+    table.cell(info_table, 5, 4, "●", text_color=get_color(is_20_50_cross_h1), text_size=size.small)
+    table.cell(info_table, 6, 4, "●", text_color=get_color(is_20_50_cross_h4), text_size=size.small)
+    table.cell(info_table, 7, 4, "●", text_color=get_color(is_20_50_cross_d1), text_size=size.small)
+    table.cell(info_table, 8, 4, "●", text_color=get_color(is_20_50_cross_w1), text_size=size.small)
     
-    table.cell(info_table, 0, 4, "Bull Power:", text_color=color.white, text_size=size.tiny)
-    table.cell(info_table, 1, 4, str.tostring(math.round(mtf_bull_power, 1)) + "%", text_color=color.lime, text_size=size.tiny)
-    table.cell(info_table, 2, 4, "Bear Power:", text_color=color.white, text_size=size.tiny)
-    table.cell(info_table, 3, 4, str.tostring(math.round(mtf_bear_power, 1)) + "%", text_color=color.red, text_size=size.tiny)
+    // 10/20 row
+    table.cell(info_table, 0, 5, "10/20", text_color=color.white, text_size=size.tiny)
+    table.cell(info_table, 1, 5, "●", text_color=get_color(is_10_20_cross_m1), text_size=size.small)
+    table.cell(info_table, 2, 5, "●", text_color=get_color(is_10_20_cross_m5), text_size=size.small)
+    table.cell(info_table, 3, 5, "●", text_color=get_color(is_10_20_cross_m15), text_size=size.small)
+    table.cell(info_table, 4, 5, "●", text_color=get_color(is_10_20_cross_m30), text_size=size.small)
+    table.cell(info_table, 5, 5, "●", text_color=get_color(is_10_20_cross_h1), text_size=size.small)
+    table.cell(info_table, 6, 5, "●", text_color=get_color(is_10_20_cross_h4), text_size=size.small)
+    table.cell(info_table, 7, 5, "●", text_color=get_color(is_10_20_cross_d1), text_size=size.small)
+    table.cell(info_table, 8, 5, "●", text_color=get_color(is_10_20_cross_w1), text_size=size.small)
     
-    // Timeframe Analysis
-    table.cell(info_table, 0, 5, "TIMEFRAMES", text_color=color.white, text_size=size.small, bgcolor=color.new(color.purple, 70))
-    table.cell(info_table, 1, 5, "5M", text_color=color.white, text_size=size.tiny, bgcolor=color.new(color.purple, 70))
-    table.cell(info_table, 2, 5, "15M", text_color=color.white, text_size=size.tiny, bgcolor=color.new(color.purple, 70))
-    table.cell(info_table, 3, 5, "30M", text_color=color.white, text_size=size.tiny, bgcolor=color.new(color.purple, 70))
+    // Power summary
+    table.cell(info_table, 0, 7, "LTF POWER", text_color=color.white, text_size=size.tiny, bgcolor=color.new(color.green, 70))
+    table.cell(info_table, 1, 7, "Bull:", text_color=color.white, text_size=size.tiny)
+    table.cell(info_table, 2, 7, str.tostring(ltf_bull_power) + "%", text_color=color.lime, text_size=size.tiny)
+    table.cell(info_table, 3, 7, "Bear:", text_color=color.white, text_size=size.tiny)
+    table.cell(info_table, 4, 7, str.tostring(ltf_bear_power) + "%", text_color=color.red, text_size=size.tiny)
     
-    table.cell(info_table, 0, 6, "200 SMA", text_color=color.white, text_size=size.tiny)
-    table.cell(info_table, 1, 6, "●", text_color=get_color(is_above_m5_200sma), text_size=size.small)
-    table.cell(info_table, 2, 6, "●", text_color=get_color(is_above_m15_200sma), text_size=size.small)
-    table.cell(info_table, 3, 6, "●", text_color=get_color(is_above_m30_200sma), text_size=size.small)
+    table.cell(info_table, 0, 8, "HTF POWER", text_color=color.white, text_size=size.tiny, bgcolor=color.new(color.purple, 70))
+    table.cell(info_table, 1, 8, "Bull:", text_color=color.white, text_size=size.tiny)
+    table.cell(info_table, 2, 8, str.tostring(htf_bull_power) + "%", text_color=color.lime, text_size=size.tiny)
+    table.cell(info_table, 3, 8, "Bear:", text_color=color.white, text_size=size.tiny)
+    table.cell(info_table, 4, 8, str.tostring(htf_bear_power) + "%", text_color=color.red, text_size=size.tiny)
     
-    table.cell(info_table, 0, 7, "50/200", text_color=color.white, text_size=size.tiny)
-    table.cell(info_table, 1, 7, "●", text_color=get_color(is_golden_cross_m5), text_size=size.small)
-    table.cell(info_table, 2, 7, "●", text_color=get_color(is_golden_cross_m15), text_size=size.small)
-    table.cell(info_table, 3, 7, "●", text_color=get_color(is_golden_cross_m30), text_size=size.small)
-    
-    table.cell(info_table, 0, 8, "", text_color=color.white, text_size=size.tiny, bgcolor=color.new(color.purple, 70))
-    table.cell(info_table, 1, 8, "1H", text_color=color.white, text_size=size.tiny, bgcolor=color.new(color.purple, 70))
-    table.cell(info_table, 2, 8, "4H", text_color=color.white, text_size=size.tiny, bgcolor=color.new(color.purple, 70))
-    table.cell(info_table, 3, 8, "1D", text_color=color.white, text_size=size.tiny, bgcolor=color.new(color.purple, 70))
-    
-    table.cell(info_table, 0, 9, "200 SMA", text_color=color.white, text_size=size.tiny)
-    table.cell(info_table, 1, 9, "●", text_color=get_color(is_above_h1_200sma), text_size=size.small)
-    table.cell(info_table, 2, 9, "●", text_color=get_color(is_above_h4_200sma), text_size=size.small)
-    table.cell(info_table, 3, 9, "●", text_color=get_color(is_above_d1_200sma), text_size=size.small)
-    
-    table.cell(info_table, 0, 10, "50/200", text_color=color.white, text_size=size.tiny)
-    table.cell(info_table, 1, 10, "●", text_color=get_color(is_golden_cross_h1), text_size=size.small)
-    table.cell(info_table, 2, 10, "●", text_color=get_color(is_golden_cross_h4), text_size=size.small)
-    table.cell(info_table, 3, 10, "●", text_color=get_color(is_golden_cross_d1), text_size=size.small)
-    
-    // Combined Signal
-    table.cell(info_table, 0, 11, "COMBINED:", text_color=color.white, text_size=size.tiny)
-    combined_color = combined_signal > 0.7 ? color.lime : combined_signal < 0.3 ? color.red : color.yellow
-    table.cell(info_table, 1, 11, str.tostring(math.round(combined_signal * 100, 1)) + "%", text_color=combined_color, text_size=size.tiny)
-    
-    signal_text = combined_signal > 0.7 ? "STRONG BULL" : combined_signal < 0.3 ? "STRONG BEAR" : "NEUTRAL"
-    table.cell(info_table, 2, 11, signal_text, text_color=combined_color, text_size=size.tiny)
-
-plot(show_ma_plots ? h1_200sma : na, "H1 200SMA", color=color.red, linewidth=1)
-plot(show_ma_plots ? h4_200sma : na, "H4 200SMA", color=color.orange, linewidth=1)
-plot(show_ma_plots ? d1_200sma : na, "D1 200SMA", color=color.yellow, linewidth=2)
+    table.cell(info_table, 0, 9, "COMBINED", text_color=color.white, text_size=size.tiny, bgcolor=color.new(color.blue, 70))
+    table.cell(info_table, 1, 9, "Bull:", text_color=color.white, text_size=size.tiny)
+    table.cell(info_table, 2, 9, str.tostring(math.round(mtf_bull_power, 1)) + "%", text_color=color.aqua, text_size=size.tiny)
+    table.cell(info_table, 3, 9, "Bear:", text_color=color.white, text_size=size.tiny)
+    table.cell(info_table, 4, 9, str.tostring(math.round(mtf_bear_power, 1)) + "%", text_color=color.orange, text_size=size.tiny)
 
